@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gnmt
+  namespace: nvidia
+spec:
+  restartPolicy: OnFailure
+  containers:
+    - name: gnmt
+      image: "quay.io/dfeddema/ngc_gnmt_dgxsc16"
+      command: ["/bin/bash", "-ec", "export INSLURM=0; export NEXP=1;  export PREPROC_DATADIR=/var/home/core/data/u1/mlperf/dataset/gnmt_preproc; export DATADIR=/var/home/core/data/u1/mlperf/dataset/rnn_translator/data; export LOGDIR=/home/testuser/data/mlperf/logs; printenv; source config_DGX1.sh; ./run_and_time.sh ; tail -f /dev/null " ]
+      runAsUser: 1000
+      env:
+        - name: NVIDIA_VISIBLE_DEVICES
+          value: all
+        - name: NVIDIA_DRIVER_CAPABILITIES
+          value: "compute,utility"
+        - name: NVIDIA_REQUIRE_CUDA
+          value: "cuda>=5.0"
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          nvidia.com/gpu: 4 # requesting 4 GPU
+      volumeMounts:
+      - mountPath: /preproc_data
+        name: test-volume
+      - mountPath: /data
+        name: test-volume2
+      - mountPath: /dev/shm
+        name: dshm
+  volumes:
+  - name: test-volume
+    hostPath:
+      # directory location on host
+      path: /var/home/core/data/u1/mlperf/dataset/gnmt_preproc
+  - name: test-volume2
+    hostPath:
+      # directory location on host
+      path: /var/home/core/data/u1/mlperf/dataset/rnn_translator/data 
+  - name: dshm
+    emptyDir:
+      medium: Memory
