@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ssd
+  namespace: nvidia
+spec:
+  restartPolicy: OnFailure
+  containers:
+    - name: ssd
+      image: "quay.io/dfeddema/ngc_ssd_dgxsc16"
+      command: ["/bin/bash", "-ec", "export INSLURM=0; export NEXP=1;  export DATADIR=/var/home/core/data/u1/mlperf/dataset/single_stage_detector; export LOGDIR=/home/mlperf/logs; printenv; source config_DGX1.sh; ./run_and_time.sh ; tail -f /dev/null" ]
+      runAsUser: 1000
+      env:
+        - name: NVIDIA_VISIBLE_DEVICES
+          value: all
+        - name: NVIDIA_DRIVER_CAPABILITIES
+          value: "compute,utility"
+        - name: NVIDIA_REQUIRE_CUDA
+          value: "cuda>=5.0"
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          nvidia.com/gpu: 4 # requesting 4 GPU
+      volumeMounts:
+      - mountPath: /home
+        name: test-volume
+      - mountPath: /data
+        name: test-volume2
+      - mountPath: /dev/shm
+        name: dshm
+  volumes:
+  - name: test-volume
+    hostPath:
+      # directory location on host
+      path: /var/home/core/data/u1/mlperf/dataset/single_stage_detector/coco2017 
+  - name: test-volume2
+    hostPath:
+      # directory location on host
+      path: /var/home/core/data/u1/mlperf/dataset/single_stage_detector
+  - name: dshm
+    emptyDir:
+      medium: Memory
