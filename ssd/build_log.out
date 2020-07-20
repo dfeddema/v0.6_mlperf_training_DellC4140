@@ -1,0 +1,382 @@
+nohup: ignoring input
+STEP 1: FROM registry.access.redhat.com/rhel7.6
+STEP 2: RUN set -vx && echo "7.6" > /etc/yum/vars/releasever && yum-config-manager --enable rhel-7-server-optional-rpms && yum -y -v -t install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm" && yum clean all && yum -y update && cd /var/cache && /bin/rm -rf dnf yum
+--> Using cache 05c02875a9466b22d4cd95c5846b09ec60106b074dcca19e88b72daae22ae61a
+STEP 3: RUN set -vx && echo -e 'set -vx \nfor (( TRY=1; TRY<=11; TRY++ )); do \n    yum -y -v install $@ \n    result=$? \n    for PKG in $@ ; do \n        yum list installed | grep "^$PKG" \n        (( result += $? )) \n    done \n    if (( $result == 0 )); then \n        /bin/rm -rf /var/cache/yum \n        /bin/rm -rf /var/cache/dnf \n        exit 0 \n    fi \n    sleep 10 \ndone \nexit 1 \n' > /tmp/yum_install.sh && chmod +x /tmp/yum_install.sh && cd /usr/local && /bin/rm -rf lib64 && ln -s lib lib64 && /tmp/yum_install.sh     binutils     bzip2     findutils     gcc     gcc-c++     gcc-gfortran     git     gzip     make     patch     pciutils     unzip     vim-enhanced     wget     xz     zip
+--> Using cache 095fde3083999c853da65391c302b9206485bdcc6f96207118bdf98b7281b8c1
+STEP 4: RUN set -vx && mkdir -p /tmp/gcc_tmp_build_dir; cd /tmp/gcc_tmp_build_dir; wget -q "https://ftp.gnu.org/gnu/gcc/gcc-5.5.0/gcc-5.5.0.tar.xz"; wget -q "https://gcc.gnu.org/pub/gcc/infrastructure/gmp-6.1.0.tar.bz2"; wget -q "https://gcc.gnu.org/pub/gcc/infrastructure/mpfr-3.1.4.tar.bz2"; wget -q "https://gcc.gnu.org/pub/gcc/infrastructure/mpc-1.0.3.tar.gz"; wget -q "https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2"; tar -xf gcc-5.5.0.tar.xz; tar -xf gmp-6.1.0.tar.bz2; tar -xf mpfr-3.1.4.tar.bz2; tar -xf mpc-1.0.3.tar.gz; tar -xf isl-0.18.tar.bz2; ln -s /tmp/gcc_tmp_build_dir/gmp-6.1.0 gcc-5.5.0/gmp; ln -s /tmp/gcc_tmp_build_dir/mpfr-3.1.4 gcc-5.5.0/mpfr; ln -s /tmp/gcc_tmp_build_dir/mpc-1.0.3 gcc-5.5.0/mpc; ln -s /tmp/gcc_tmp_build_dir/isl-0.18 gcc-5.5.0/isl; gcc-5.5.0/configure --disable-multilib --enable-languages=c,c++,fortran --prefix=/usr/local; make -j`getconf _NPROCESSORS_ONLN`; make install-strip; cd /tmp; /bin/rm -rf /tmp/gcc_tmp_build_dir
+--> Using cache 167eacece4f509bb307da970f1407e64c6c710adf0f698ca84ffe3f728030676
+STEP 5: ENV CC="/usr/local/bin/gcc" CXX="/usr/local/bin/g++" LD_LIBRARY_PATH="/usr/local/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+--> Using cache 67cda15234e0232a4360a081750128d75d377130d18889625ddfffee35e7aaba
+STEP 6: RUN set -vx && /tmp/yum_install.sh     bzip2-devel     expat-devel     gdbm-devel     libdb4-devel     libffi-devel     ncurses-devel     openssl-devel     readline-devel     sqlite-devel     tk-devel     xz-devel     zlib-devel && cd /var/cache && /bin/rm -rf dnf yum && cd /tmp && wget "https://www.python.org/ftp/python/3.6.8/Python-3.6.8.tar.xz" && tar -xf Python*.xz && /bin/rm Python*.xz && cd /tmp/Python* && ./configure     --enable-optimizations     --enable-shared     --prefix=/usr/local     --with-ensurepip=install     LDFLAGS="-Wl,-rpath /usr/local/lib" && make -j`getconf _NPROCESSORS_ONLN` install && cd /usr/local/include && PYTHON_INC_DIR_NAME=`ls -d python*` && ALT_PYTHON_INC_DIR_NAME=${PYTHON_INC_DIR_NAME%m} && if [ "$ALT_PYTHON_INC_DIR_NAME" != "$PYTHON_INC_DIR_NAME" ]; then     ln -s "$PYTHON_INC_DIR_NAME" "$ALT_PYTHON_INC_DIR_NAME"; fi && cd /tmp && /bin/rm -r /tmp/Python* && /usr/local/bin/pip3 -v install --upgrade     pip     setuptools && if python --version > /dev/null 2>&1; then     whereis python; else     cd /usr/local/bin;     ln -s python3 python; fi
+--> Using cache e878893e0a5dbc924005875a039fc13654934b969e61e3374cce4bb672626848
+STEP 7: RUN set -vx && cd /tmp && wget "https://cmake.org/files/v3.13/cmake-3.13.3.tar.gz" && tar -xf cmake*.gz && /bin/rm cmake*.gz && cd /tmp/cmake* && ./bootstrap && make -j`getconf _NPROCESSORS_ONLN` install && cd /tmp && /bin/rm -rf /tmp/cmake* && cmake --version
+--> Using cache 7e663b563e6273574d090230f7f7b2c600e2fca9d75d86ba676fa730f911fc8a
+STEP 8: RUN date; df -h
+--> Using cache 4f47258d2d27bd918970d33da68d253529ecc3c43c0e41c5e3810d08de03be7d
+STEP 9: RUN set -vx && echo -e 'exec > /etc/yum.repos.d/cuda.repo \necho [cuda] \necho name=cuda \nif [ -f /etc/fedora-release ]; then \necho baseurl="http://developer.download.nvidia.com/compute/cuda/repos/fedora27/x86_64" \nelse \necho baseurl="http://developer.download.nvidia.com/compute/cuda/repos/rhel7/x86_64" \nfi \necho enabled=1 \necho gpgcheck=0 \n' >> /tmp/Make_CUDA_Repo.sh && sh /tmp/Make_CUDA_Repo.sh && /tmp/yum_install.sh cuda-10-1 && echo -e '\nexport CUDA_HOME=/usr/local/cuda \nexport CUDA_PATH=/usr/local/cuda \nexport PATH=/usr/local/cuda/bin:/usr/local/bin:/usr/bin:${PATH} \nexport LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH \n\n' >> ~/.bashrc
+--> Using cache a4f048c55eda2ba3fad07fed075de3da72e43ab39d70a5e1da12da1dc64d2db3
+STEP 10: ENV CUDA_VERSION="10.1" CUDA_HOME="/usr/local/cuda" CUDA_PATH="/usr/local/cuda" PATH="/usr/local/cuda/bin:/usr/local/bin:/usr/bin:${PATH:+:${PATH}}" LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+--> Using cache db500c4aee90742d319d5c937ea0c0d5c89ab13075c8c32d050e1f79d0ff0017
+STEP 11: RUN set -vx && cd /tmp && git clone --depth 1 "https://github.com/NVIDIA/nccl.git" --branch=v2.4.6-1 && cd /tmp/nccl && if grep install Makefile ; then     echo "Makefile already has install target"; else     echo "install: src.install" >> Makefile; fi && make -j`getconf _NPROCESSORS_ONLN` src.build && make -j`getconf _NPROCESSORS_ONLN` install && cd /tmp && /bin/rm -rf /tmp/nccl* && ldconfig 
+--> Using cache b2a56a303a1a989e516cb44d0b52630c1e7be12182d02e30931fbf7609659e37
+STEP 12: RUN set -vx && cd /tmp && echo -e 'set -vx \nif [ -d "/usr/local/cuda-10.1" ]; then \n    CUDNN_VER="v7.5.0/cudnn-10.1-linux-x64-v7.5.0.56.tgz" \nelif [ -d "/usr/local/cuda-9.2" ]; then \n    CUDNN_VER="v7.4.2/cudnn-9.2-linux-x64-v7.4.2.24.tgz" \nelif [ -d "/usr/local/cuda-9.1" ]; then \n    CUDNN_VER="v7.1.3/cudnn-9.1-linux-x64-v7.1.tgz" \nelif [ -d "/usr/local/cuda-9.0" ]; then \n    CUDNN_VER="v7.4.2/cudnn-9.0-linux-x64-v7.4.2.24.tgz" \nelif [ -d "/usr/local/cuda-8.0" ]; then \n    CUDNN_VER="v7.1.3/cudnn-8.0-linux-x64-v7.1.tgz" \nelse \n    CUDNN_VER="idk_cudnn_version" \nfi \necho "http://developer.download.nvidia.com/compute/redist/cudnn/$CUDNN_VER" \n' > /tmp/select_cudnn.sh && wget `sh /tmp/select_cudnn.sh` && tar -xvf cudnn*.tgz && cd /tmp/cuda && mv include/cudnn.h /usr/local/cuda/include && mv lib64/lib* /usr/local/cuda/lib64 && cd /tmp && /bin/rm -rf /tmp/cud* && ldconfig
+--> Using cache b5f417d08ee124b4b00c183155ee0a235f2be29e44eb63a6811efa07c6a2bfde
+STEP 13: RUN date; df -h
+--> Using cache 0f94fe1b2e750821a9b45d3f9eabf6862328421f189c1f59c700dd32b788365a
+STEP 14: RUN set -vx && /usr/local/bin/pip3 -v install     numpy && /usr/local/bin/python3 -c 'import numpy'
+--> Using cache 19491039f16fa0411fcac366b4cc3b9828a87887b21e44d28de965bd6d8dbb3b
+STEP 15: RUN date; df -h
+--> Using cache 5464d5d94555c4d766f001f9be7896f2d0f4c31a240ef0c5aac1c7d74031d741
+STEP 16: RUN pip install tqdm pyyaml
+--> Using cache 1c267f853cc78985b852850e4c5135a3d7710ad428c09b9686531f3b55866a24
+STEP 17: WORKDIR /opt/pytorch
+--> Using cache 3fa2f2abc1b5df1d431d3ed768509085eb41179362adbe9e8a4d21e45530bff0
+STEP 18: COPY pytorch .
+--> Using cache 870f7dfa8bbdb2a2690dcc6a6685a8b9d0610cae419de0d38ea43982d221640d
+STEP 19: WORKDIR /opt/pytorch/pytorch
+--> Using cache 05ed17003c40ec78625217b124b1e55c14b8d2dc8ca97c19f034b61a7ee1d831
+STEP 20: ENV PYTORCH_BUILD_VERSION=1.1.0a0+828a6a3 PYTORCH_VERSION=1.1.0a0+828a6a3 PYTORCH_BUILD_NUMBER=0
+--> Using cache f924411dfeea185394d472d24a55e8131a87b35de6cdb984c691b04db30295c9
+STEP 21: RUN python3 setup.py install && cp -a /opt/pytorch/pytorch/third_party/ideep/mkl-dnn/external/mklml_lnx*/lib/* /usr/local/lib64 && python3 setup.py clean && rm -rf /opt/pytorch/pytorch/build
+--> Using cache 7a5e49acac54b603eaa4f03e32cabc8a4c232b86aad1cfd5b945a2507691b663
+STEP 22: WORKDIR /opt/pytorch/vision
+--> Using cache 31b47d064e51da32b665237c4e8ad6026a3d45ed9978fd12293b998cc2958567
+STEP 23: RUN python3 setup.py install && python3 setup.py clean
+--> Using cache 3345858f2153f8170ebbc9d73abd0c499a4a921ea5d9001f651a1abc72317265
+STEP 24: WORKDIR /opt/pytorch/apex 
+--> Using cache 71f08d74359483f9dcf2fb49c27d0ecd8d8deadbd30333bdd55989b59e4b772f
+STEP 25: RUN rm -rf build && python3 setup.py install --cuda_ext --cpp_ext --bnp
+--> Using cache 23d294c3cf3d8657dda3c11343537a1d0c14053003b4a88f06cf46ccfb818589
+STEP 26: RUN pip install --extra-index-url https://developer.download.nvidia.com/compute/redist/cuda/10.0 nvidia-dali
+--> Using cache eac38a2c23d73647b2fb2a11313818214f476fc53e8182a690bc40bbf11e60e9
+STEP 27: WORKDIR /opt
+a2b4101787b2a96a05320bb12736acbc72ee17fd9c13bdcd8fc65c2b3968893d
+STEP 28: ENV COCOAPI_VERSION=2.0+nv0.3.1
+db7ad57cc64e1245884ddec3835498371d2ef285b63baa47a9479b849f74b64d
+STEP 29: RUN export COCOAPI_TAG=$(echo ${COCOAPI_VERSION} | sed 's/^.*+n//') && pip install --no-cache-dir git+https://github.com/nvidia/cocoapi.git@${COCOAPI_TAG}#subdirectory=PythonAPI
+Collecting git+https://github.com/nvidia/cocoapi.git@v0.3.1#subdirectory=PythonAPI
+  Cloning https://github.com/nvidia/cocoapi.git (to revision v0.3.1) to /tmp/pip-req-build-w2fununw
+  Running command git clone -q https://github.com/nvidia/cocoapi.git /tmp/pip-req-build-w2fununw
+Requirement already satisfied: setuptools>=18.0 in /usr/local/lib/python3.6/site-packages (from pycocotools==2.0+nv0.3.1) (41.0.1)
+Collecting cython>=0.27.3 (from pycocotools==2.0+nv0.3.1)
+  Downloading https://files.pythonhosted.org/packages/45/f2/a7101b3457561e57f5abcd6f5ac13190054fecd7370f58f36fe2d6574742/Cython-0.29.13-cp36-cp36m-manylinux1_x86_64.whl (2.1MB)
+Collecting matplotlib>=2.1.0 (from pycocotools==2.0+nv0.3.1)
+  Downloading https://files.pythonhosted.org/packages/57/4f/dd381ecf6c6ab9bcdaa8ea912e866dedc6e696756156d8ecc087e20817e2/matplotlib-3.1.1-cp36-cp36m-manylinux1_x86_64.whl (13.1MB)
+Collecting pybind11>=2.2 (from pycocotools==2.0+nv0.3.1)
+  Downloading https://files.pythonhosted.org/packages/5d/85/c7a8dffda52ce25a8bcfe9a28b6861bdd52da59ae001fdd4173e054b7d9b/pybind11-2.3.0-py2.py3-none-any.whl (147kB)
+Collecting python-dateutil>=2.1 (from matplotlib>=2.1.0->pycocotools==2.0+nv0.3.1)
+  Downloading https://files.pythonhosted.org/packages/41/17/c62faccbfbd163c7f57f3844689e3a78bae1f403648a6afb1d0866d87fbb/python_dateutil-2.8.0-py2.py3-none-any.whl (226kB)
+Requirement already satisfied: numpy>=1.11 in /usr/local/lib/python3.6/site-packages (from matplotlib>=2.1.0->pycocotools==2.0+nv0.3.1) (1.16.4)
+Collecting pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.1 (from matplotlib>=2.1.0->pycocotools==2.0+nv0.3.1)
+  Downloading https://files.pythonhosted.org/packages/11/fa/0160cd525c62d7abd076a070ff02b2b94de589f1a9789774f17d7c54058e/pyparsing-2.4.2-py2.py3-none-any.whl (65kB)
+Collecting cycler>=0.10 (from matplotlib>=2.1.0->pycocotools==2.0+nv0.3.1)
+  Downloading https://files.pythonhosted.org/packages/f7/d2/e07d3ebb2bd7af696440ce7e754c59dd546ffe1bbe732c8ab68b9c834e61/cycler-0.10.0-py2.py3-none-any.whl
+Collecting kiwisolver>=1.0.1 (from matplotlib>=2.1.0->pycocotools==2.0+nv0.3.1)
+  Downloading https://files.pythonhosted.org/packages/f8/a1/5742b56282449b1c0968197f63eae486eca2c35dcd334bab75ad524e0de1/kiwisolver-1.1.0-cp36-cp36m-manylinux1_x86_64.whl (90kB)
+Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.6/site-packages/six-1.12.0-py3.6.egg (from python-dateutil>=2.1->matplotlib>=2.1.0->pycocotools==2.0+nv0.3.1) (1.12.0)
+Installing collected packages: cython, python-dateutil, pyparsing, cycler, kiwisolver, matplotlib, pybind11, pycocotools
+  Running setup.py install for pycocotools: started
+    Running setup.py install for pycocotools: finished with status 'done'
+Successfully installed cycler-0.10.0 cython-0.29.13 kiwisolver-1.1.0 matplotlib-3.1.1 pybind11-2.3.0 pycocotools-2.0+nv0.3.1 pyparsing-2.4.2 python-dateutil-2.8.0
+WARNING: You are using pip version 19.1.1, however version 19.2.2 is available.
+You should consider upgrading via the 'pip install --upgrade pip' command.
+e401434a2bc8ee4fd47d8f56e3aa41f74361a8c490905020cc84d4b751271156
+STEP 30: RUN yum -y install numactl         infiniband-diags         pciutils
+Loaded plugins: ovl, product-id, search-disabled-repos, subscription-manager
+http://csc.mcs.sdsmt.edu/epel/7/x86_64/repodata/f89cb839b944f60269a83a692363c765118abb44625a2b61cdbfb37252003fcc-updateinfo.xml.bz2: [Errno 12] Timeout on http://csc.mcs.sdsmt.edu/epel/7/x86_64/repodata/f89cb839b944f60269a83a692363c765118abb44625a2b61cdbfb37252003fcc-updateinfo.xml.bz2: (28, 'Connection timed out after 30000 milliseconds')
+Trying other mirror.
+Package pciutils-3.5.1-3.el7.x86_64 already installed and latest version
+Resolving Dependencies
+--> Running transaction check
+---> Package infiniband-diags.x86_64 0:2.0.0-2.el7 will be installed
+--> Processing Dependency: libibumad.so.3(IBUMAD_1.0)(64bit) for package: infiniband-diags-2.0.0-2.el7.x86_64
+--> Processing Dependency: libosmcomp.so.3(OSMCOMP_2.3)(64bit) for package: infiniband-diags-2.0.0-2.el7.x86_64
+--> Processing Dependency: libibumad.so.3()(64bit) for package: infiniband-diags-2.0.0-2.el7.x86_64
+--> Processing Dependency: libosmcomp.so.3()(64bit) for package: infiniband-diags-2.0.0-2.el7.x86_64
+---> Package numactl.x86_64 0:2.0.9-7.el7 will be installed
+--> Processing Dependency: libnuma.so.1(libnuma_1.1)(64bit) for package: numactl-2.0.9-7.el7.x86_64
+--> Processing Dependency: libnuma.so.1(libnuma_1.2)(64bit) for package: numactl-2.0.9-7.el7.x86_64
+--> Processing Dependency: libnuma.so.1(libnuma_1.3)(64bit) for package: numactl-2.0.9-7.el7.x86_64
+--> Processing Dependency: libnuma.so.1(libnuma_1.4)(64bit) for package: numactl-2.0.9-7.el7.x86_64
+--> Processing Dependency: libnuma.so.1()(64bit) for package: numactl-2.0.9-7.el7.x86_64
+--> Running transaction check
+---> Package libibumad.x86_64 0:17.2-3.el7 will be installed
+--> Processing Dependency: rdma-core(x86-64) = 17.2-3.el7 for package: libibumad-17.2-3.el7.x86_64
+---> Package numactl-libs.x86_64 0:2.0.9-7.el7 will be installed
+---> Package opensm-libs.x86_64 0:3.3.20-3.el7 will be installed
+--> Running transaction check
+---> Package rdma-core.x86_64 0:17.2-3.el7 will be installed
+--> Processing Dependency: initscripts for package: rdma-core-17.2-3.el7.x86_64
+--> Running transaction check
+---> Package initscripts.x86_64 0:9.49.46-1.el7 will be installed
+--> Processing Dependency: sysvinit-tools >= 2.87-5 for package: initscripts-9.49.46-1.el7.x86_64
+--> Processing Dependency: /sbin/arping for package: initscripts-9.49.46-1.el7.x86_64
+--> Processing Dependency: hostname for package: initscripts-9.49.46-1.el7.x86_64
+--> Processing Dependency: iproute for package: initscripts-9.49.46-1.el7.x86_64
+--> Running transaction check
+---> Package hostname.x86_64 0:3.13-3.el7 will be installed
+---> Package iproute.x86_64 0:4.11.0-14.el7_6.2 will be installed
+--> Processing Dependency: libmnl.so.0(LIBMNL_1.0)(64bit) for package: iproute-4.11.0-14.el7_6.2.x86_64
+--> Processing Dependency: libmnl.so.0()(64bit) for package: iproute-4.11.0-14.el7_6.2.x86_64
+--> Processing Dependency: libxtables.so.10()(64bit) for package: iproute-4.11.0-14.el7_6.2.x86_64
+---> Package iputils.x86_64 0:20160308-10.el7 will be installed
+---> Package sysvinit-tools.x86_64 0:2.88-14.dsf.el7 will be installed
+--> Running transaction check
+---> Package iptables.x86_64 0:1.4.21-28.el7 will be installed
+--> Processing Dependency: libnetfilter_conntrack.so.3()(64bit) for package: iptables-1.4.21-28.el7.x86_64
+--> Processing Dependency: libnfnetlink.so.0()(64bit) for package: iptables-1.4.21-28.el7.x86_64
+---> Package libmnl.x86_64 0:1.0.3-7.el7 will be installed
+--> Running transaction check
+---> Package libnetfilter_conntrack.x86_64 0:1.0.6-1.el7_3 will be installed
+---> Package libnfnetlink.x86_64 0:1.0.1-4.el7 will be installed
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+ Package                 Arch    Version              Repository           Size
+================================================================================
+Installing:
+ infiniband-diags        x86_64  2.0.0-2.el7          rhel-7-server-rpms  305 k
+ numactl                 x86_64  2.0.9-7.el7          rhel-7-server-rpms   66 k
+Installing for dependencies:
+ hostname                x86_64  3.13-3.el7           rhel-7-server-rpms   17 k
+ initscripts             x86_64  9.49.46-1.el7        rhel-7-server-rpms  439 k
+ iproute                 x86_64  4.11.0-14.el7_6.2    rhel-7-server-rpms  764 k
+ iptables                x86_64  1.4.21-28.el7        rhel-7-server-rpms  433 k
+ iputils                 x86_64  20160308-10.el7      rhel-7-server-rpms  148 k
+ libibumad               x86_64  17.2-3.el7           rhel-7-server-rpms   23 k
+ libmnl                  x86_64  1.0.3-7.el7          rhel-7-server-rpms   23 k
+ libnetfilter_conntrack  x86_64  1.0.6-1.el7_3        rhel-7-server-rpms   56 k
+ libnfnetlink            x86_64  1.0.1-4.el7          rhel-7-server-rpms   26 k
+ numactl-libs            x86_64  2.0.9-7.el7          rhel-7-server-rpms   30 k
+ opensm-libs             x86_64  3.3.20-3.el7         rhel-7-server-rpms   66 k
+ rdma-core               x86_64  17.2-3.el7           rhel-7-server-rpms   49 k
+ sysvinit-tools          x86_64  2.88-14.dsf.el7      rhel-7-server-rpms   63 k
+
+Transaction Summary
+================================================================================
+Install  2 Packages (+13 Dependent packages)
+
+Total download size: 2.4 M
+Installed size: 6.8 M
+Downloading packages:
+--------------------------------------------------------------------------------
+Total                                              366 kB/s | 2.4 MB  00:06     
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Installing : libmnl-1.0.3-7.el7.x86_64                                   1/15 
+  Installing : libnfnetlink-1.0.1-4.el7.x86_64                             2/15 
+  Installing : libnetfilter_conntrack-1.0.6-1.el7_3.x86_64                 3/15 
+  Installing : iptables-1.4.21-28.el7.x86_64                               4/15 
+  Installing : iproute-4.11.0-14.el7_6.2.x86_64                            5/15 
+  Installing : hostname-3.13-3.el7.x86_64                                  6/15 
+  Installing : sysvinit-tools-2.88-14.dsf.el7.x86_64                       7/15 
+  Installing : iputils-20160308-10.el7.x86_64                              8/15 
+  Installing : initscripts-9.49.46-1.el7.x86_64                            9/15 
+warning: /etc/adjtime created as /etc/adjtime.rpmnew
+  Installing : rdma-core-17.2-3.el7.x86_64                                10/15 
+  Installing : libibumad-17.2-3.el7.x86_64                                11/15 
+  Installing : opensm-libs-3.3.20-3.el7.x86_64                            12/15 
+  Installing : numactl-libs-2.0.9-7.el7.x86_64                            13/15 
+  Installing : numactl-2.0.9-7.el7.x86_64                                 14/15 
+  Installing : infiniband-diags-2.0.0-2.el7.x86_64                        15/15 
+  Verifying  : libnfnetlink-1.0.1-4.el7.x86_64                             1/15 
+  Verifying  : numactl-libs-2.0.9-7.el7.x86_64                             2/15 
+  Verifying  : opensm-libs-3.3.20-3.el7.x86_64                             3/15 
+  Verifying  : infiniband-diags-2.0.0-2.el7.x86_64                         4/15 
+  Verifying  : iputils-20160308-10.el7.x86_64                              5/15 
+  Verifying  : iproute-4.11.0-14.el7_6.2.x86_64                            6/15 
+  Verifying  : libibumad-17.2-3.el7.x86_64                                 7/15 
+  Verifying  : libmnl-1.0.3-7.el7.x86_64                                   8/15 
+  Verifying  : libnetfilter_conntrack-1.0.6-1.el7_3.x86_64                 9/15 
+  Verifying  : numactl-2.0.9-7.el7.x86_64                                 10/15 
+  Verifying  : sysvinit-tools-2.88-14.dsf.el7.x86_64                      11/15 
+  Verifying  : rdma-core-17.2-3.el7.x86_64                                12/15 
+  Verifying  : initscripts-9.49.46-1.el7.x86_64                           13/15 
+  Verifying  : iptables-1.4.21-28.el7.x86_64                              14/15 
+  Verifying  : hostname-3.13-3.el7.x86_64                                 15/15 
+
+Installed:
+  infiniband-diags.x86_64 0:2.0.0-2.el7       numactl.x86_64 0:2.0.9-7.el7      
+
+Dependency Installed:
+  hostname.x86_64 0:3.13-3.el7                                                  
+  initscripts.x86_64 0:9.49.46-1.el7                                            
+  iproute.x86_64 0:4.11.0-14.el7_6.2                                            
+  iptables.x86_64 0:1.4.21-28.el7                                               
+  iputils.x86_64 0:20160308-10.el7                                              
+  libibumad.x86_64 0:17.2-3.el7                                                 
+  libmnl.x86_64 0:1.0.3-7.el7                                                   
+  libnetfilter_conntrack.x86_64 0:1.0.6-1.el7_3                                 
+  libnfnetlink.x86_64 0:1.0.1-4.el7                                             
+  numactl-libs.x86_64 0:2.0.9-7.el7                                             
+  opensm-libs.x86_64 0:3.3.20-3.el7                                             
+  rdma-core.x86_64 0:17.2-3.el7                                                 
+  sysvinit-tools.x86_64 0:2.88-14.dsf.el7                                       
+
+Complete!
+2b20a38dc350c40d998c104485c794291cf8f180b0483d182145a98e62a56961
+STEP 31: ENV NVIDIA_PYTORCH_VERSION="RHEL"
+2d44e3a8b5dba2cdabf225e72020176ad0876554fb29423354a0a4ccaa9d04e8
+STEP 32: ENV OPENMPI_VERSION=3.0.2
+536efe0111b7fd5b4c48492065ea542f51e0d8adecf022670d33a3585cb8b197
+STEP 33: ENV CUDA_DRIVER_VERSION=418.67
+84018235d128d405576a2bd9c9492c681f49b0bb1ff463aa6eefa92c28aeb19f
+STEP 34: ENV NCCL_VERSION=2.3.7
+a49e76d4c6e95f494e9815c11b43ae06dbfce677628e4dacb1184753bffa7528
+STEP 35: ENV CUDNN_VERSION=7.4
+f86e0e42b07ec03c20d9eb797e7f1e480b279d3d80b09eca27515777d889f3cb
+STEP 36: ENV CUBLAS_VERSION=10.0.130
+c81a5ff7dc49d4541d7e6af9d6191fca46642949539bd92ce4220401acef397e
+STEP 37: ENV TRT_VERSION=none
+d292be10ca4318c97beaba92c17df51feabc89bfb8b840ac63a84ba48b3d7af7
+STEP 38: ENV DALI_VERSION=none
+76be9744e1adb1b23bb64c6f8ebed3e808bc9ca248ab7356342f4e6373d121fb
+STEP 39: WORKDIR /workspace/single_stage_detector
+74cef6b22c799060cf1a14d49e014883be489e0c64867734c2be36dbd60f6771
+STEP 40: COPY ssd/requirements.txt .
+c946109f5197f7954b49ae0012a35a36ee3ef88e807d9d9f9d1718745a041f3b
+STEP 41: RUN pip install --upgrade --no-cache-dir pip && pip install --no-cache-dir https://github.com/mlperf/training/archive/6289993e1e9f0f5c4534336df83ff199bd0cdb75.zip#subdirectory=compliance && pip install --no-cache-dir -r requirements.txt
+Collecting pip
+  Downloading https://files.pythonhosted.org/packages/8d/07/f7d7ced2f97ca3098c16565efbe6b15fafcba53e8d9bdb431e09140514b0/pip-19.2.2-py2.py3-none-any.whl (1.4MB)
+Installing collected packages: pip
+  Found existing installation: pip 19.1.1
+    Uninstalling pip-19.1.1:
+      Successfully uninstalled pip-19.1.1
+Successfully installed pip-19.2.2
+Collecting https://github.com/mlperf/training/archive/6289993e1e9f0f5c4534336df83ff199bd0cdb75.zip#subdirectory=compliance
+  Downloading https://github.com/mlperf/training/archive/6289993e1e9f0f5c4534336df83ff199bd0cdb75.zip
+Installing collected packages: mlperf-compliance
+  Running setup.py install for mlperf-compliance: started
+    Running setup.py install for mlperf-compliance: finished with status 'done'
+Successfully installed mlperf-compliance-0.6.0
+Requirement already satisfied: mlperf-compliance==0.6.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 1)) (0.6.0)
+Collecting ujson==1.35 (from -r requirements.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/16/c4/79f3409bc710559015464e5f49b9879430d8f87498ecdc335899732e5377/ujson-1.35.tar.gz (192kB)
+Installing collected packages: ujson
+  Running setup.py install for ujson: started
+    Running setup.py install for ujson: finished with status 'done'
+Successfully installed ujson-1.35
+d43ca64d2ea1ce0f76f953b2904c52df8adbb75bb6ed3c468dae6b556ede3f7a
+STEP 42: RUN yum -y install openmpi3
+Loaded plugins: ovl, product-id, search-disabled-repos, subscription-manager
+Resolving Dependencies
+--> Running transaction check
+---> Package openmpi3.x86_64 0:3.0.2-1.el7 will be installed
+--> Processing Dependency: environment-modules for package: openmpi3-3.0.2-1.el7.x86_64
+--> Processing Dependency: libfabric.so.1(FABRIC_1.0)(64bit) for package: openmpi3-3.0.2-1.el7.x86_64
+--> Processing Dependency: libfabric.so.1(FABRIC_1.1)(64bit) for package: openmpi3-3.0.2-1.el7.x86_64
+--> Processing Dependency: libibverbs.so.1(IBVERBS_1.0)(64bit) for package: openmpi3-3.0.2-1.el7.x86_64
+--> Processing Dependency: libibverbs.so.1(IBVERBS_1.1)(64bit) for package: openmpi3-3.0.2-1.el7.x86_64
+--> Processing Dependency: libpsm2.so.2(PSM2_1.0)(64bit) for package: openmpi3-3.0.2-1.el7.x86_64
+--> Processing Dependency: librdmacm.so.1(RDMACM_1.0)(64bit) for package: openmpi3-3.0.2-1.el7.x86_64
+--> Processing Dependency: libfabric.so.1()(64bit) for package: openmpi3-3.0.2-1.el7.x86_64
+--> Processing Dependency: libhwloc.so.5()(64bit) for package: openmpi3-3.0.2-1.el7.x86_64
+--> Processing Dependency: libibverbs.so.1()(64bit) for package: openmpi3-3.0.2-1.el7.x86_64
+--> Processing Dependency: libpsm2.so.2()(64bit) for package: openmpi3-3.0.2-1.el7.x86_64
+--> Processing Dependency: libpsm_infinipath.so.1()(64bit) for package: openmpi3-3.0.2-1.el7.x86_64
+--> Processing Dependency: librdmacm.so.1()(64bit) for package: openmpi3-3.0.2-1.el7.x86_64
+--> Running transaction check
+---> Package environment-modules.x86_64 0:3.2.10-10.el7 will be installed
+---> Package hwloc-libs.x86_64 0:1.11.8-4.el7 will be installed
+--> Processing Dependency: libltdl.so.7()(64bit) for package: hwloc-libs-1.11.8-4.el7.x86_64
+---> Package infinipath-psm.x86_64 0:3.3-26_g604758e_open.2.el7 will be installed
+---> Package libfabric.x86_64 0:1.6.1-2.el7 will be installed
+--> Processing Dependency: libnl-3.so.200(libnl_3)(64bit) for package: libfabric-1.6.1-2.el7.x86_64
+--> Processing Dependency: libnl-3.so.200()(64bit) for package: libfabric-1.6.1-2.el7.x86_64
+--> Processing Dependency: libnl-route-3.so.200()(64bit) for package: libfabric-1.6.1-2.el7.x86_64
+---> Package libibverbs.x86_64 0:17.2-3.el7 will be installed
+---> Package libpsm2.x86_64 0:10.3.58-1.el7 will be installed
+---> Package librdmacm.x86_64 0:17.2-3.el7 will be installed
+--> Running transaction check
+---> Package libnl3.x86_64 0:3.2.28-4.el7 will be installed
+---> Package libtool-ltdl.x86_64 0:2.4.2-22.el7_3 will be installed
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+ Package             Arch   Version                    Repository          Size
+================================================================================
+Installing:
+ openmpi3            x86_64 3.0.2-1.el7                rhel-7-server-rpms 2.6 M
+Installing for dependencies:
+ environment-modules x86_64 3.2.10-10.el7              rhel-7-server-rpms 107 k
+ hwloc-libs          x86_64 1.11.8-4.el7               rhel-7-server-rpms 1.6 M
+ infinipath-psm      x86_64 3.3-26_g604758e_open.2.el7 rhel-7-server-rpms 186 k
+ libfabric           x86_64 1.6.1-2.el7                rhel-7-server-rpms 528 k
+ libibverbs          x86_64 17.2-3.el7                 rhel-7-server-rpms 246 k
+ libnl3              x86_64 3.2.28-4.el7               rhel-7-server-rpms 278 k
+ libpsm2             x86_64 10.3.58-1.el7              rhel-7-server-rpms 183 k
+ librdmacm           x86_64 17.2-3.el7                 rhel-7-server-rpms  62 k
+ libtool-ltdl        x86_64 2.4.2-22.el7_3             rhel-7-server-rpms  49 k
+
+Transaction Summary
+================================================================================
+Install  1 Package (+9 Dependent packages)
+
+Total download size: 5.8 M
+Installed size: 15 M
+Downloading packages:
+--------------------------------------------------------------------------------
+Total                                              1.2 MB/s | 5.8 MB  00:05     
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Installing : libnl3-3.2.28-4.el7.x86_64                                  1/10 
+  Installing : libibverbs-17.2-3.el7.x86_64                                2/10 
+  Installing : librdmacm-17.2-3.el7.x86_64                                 3/10 
+  Installing : libpsm2-10.3.58-1.el7.x86_64                                4/10 
+  Installing : infinipath-psm-3.3-26_g604758e_open.2.el7.x86_64            5/10 
+  Installing : libfabric-1.6.1-2.el7.x86_64                                6/10 
+  Installing : environment-modules-3.2.10-10.el7.x86_64                    7/10 
+  Installing : libtool-ltdl-2.4.2-22.el7_3.x86_64                          8/10 
+  Installing : hwloc-libs-1.11.8-4.el7.x86_64                              9/10 
+  Installing : openmpi3-3.0.2-1.el7.x86_64                                10/10 
+  Verifying  : libfabric-1.6.1-2.el7.x86_64                                1/10 
+  Verifying  : infinipath-psm-3.3-26_g604758e_open.2.el7.x86_64            2/10 
+  Verifying  : libpsm2-10.3.58-1.el7.x86_64                                3/10 
+  Verifying  : libtool-ltdl-2.4.2-22.el7_3.x86_64                          4/10 
+  Verifying  : environment-modules-3.2.10-10.el7.x86_64                    5/10 
+  Verifying  : librdmacm-17.2-3.el7.x86_64                                 6/10 
+  Verifying  : hwloc-libs-1.11.8-4.el7.x86_64                              7/10 
+  Verifying  : openmpi3-3.0.2-1.el7.x86_64                                 8/10 
+  Verifying  : libibverbs-17.2-3.el7.x86_64                                9/10 
+  Verifying  : libnl3-3.2.28-4.el7.x86_64                                 10/10 
+
+Installed:
+  openmpi3.x86_64 0:3.0.2-1.el7                                                 
+
+Dependency Installed:
+  environment-modules.x86_64 0:3.2.10-10.el7                                    
+  hwloc-libs.x86_64 0:1.11.8-4.el7                                              
+  infinipath-psm.x86_64 0:3.3-26_g604758e_open.2.el7                            
+  libfabric.x86_64 0:1.6.1-2.el7                                                
+  libibverbs.x86_64 0:17.2-3.el7                                                
+  libnl3.x86_64 0:3.2.28-4.el7                                                  
+  libpsm2.x86_64 0:10.3.58-1.el7                                                
+  librdmacm.x86_64 0:17.2-3.el7                                                 
+  libtool-ltdl.x86_64 0:2.4.2-22.el7_3                                          
+
+Complete!
+fe863d1e05905bd3db8872fa929b0d0d88654557a20ca1bdcb672249c4fd0194
+STEP 43: COPY ssd  .
+bbf245512e036828fe2062044fd1215b1192cc9108deda7ddbb62b935dc08fa8
+STEP 44: RUN pip install .
+Processing /workspace/single_stage_detector
+Installing collected packages: SSD
+  Running setup.py install for SSD: started
+    Running setup.py install for SSD: still running...
+    Running setup.py install for SSD: finished with status 'done'
+Successfully installed SSD-0.1
+e5f39b8f963d6e23026038746a348def21ab73ba28c4b9f5acedaa6a1f2aa758
+STEP 45: RUN rm -rf ./pytorch ENV OMP_NUM_THREADS=1
+5f4d7086307090344a4336b34147f75074a28278f48c967e09e39c0dabf2e834
+STEP 46: ENV OPENCV_FOR_THREADS_NUM=1
+STEP 47: COMMIT rhel_ssd
+d220a3aab0c684112e28a35f9a7ae25132859470a30036086df2cd0c46fd2054

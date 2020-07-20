@@ -1,0 +1,19 @@
+STEP 1: FROM nvcr.io/nvidia/pytorch:19.05-py3
+STEP 2: RUN apt-get update && apt-get install -y --no-install-recommends         infiniband-diags         pciutils &&     rm -rf /var/lib/apt/lists/*
+--> Using cache 9b6b0b39d1593ac9562573c1fcd9f3bba28764fbbda366df0aac3fa218b2d638
+STEP 3: WORKDIR /workspace/single_stage_detector
+--> Using cache c77903ccf700a854c379a5aab207467851f1201c394ff67db822cc45728b40d2
+STEP 4: COPY requirements.txt .
+--> Using cache 6a6ac4fe6c23cb2cb994746b9925e14470459ee5f303d1b25e8b3f20f10aafe3
+STEP 5: RUN pip install --no-cache-dir https://github.com/mlperf/training/archive/6289993e1e9f0f5c4534336df83ff199bd0cdb75.zip#subdirectory=compliance  && pip install --no-cache-dir -r requirements.txt
+--> Using cache 3b2e9ba8ae4506921f9e6d5fd00934218887a3da52c4abe0f430b136a18e0893
+STEP 6: COPY . .
+--> Using cache 5e9024a4b541261f1a08e210e7fdc65f755be9ea7653cbfce6cd794a1b58dc97
+STEP 7: RUN pip install .
+--> Using cache fa8e98423c68ab2074e669e527b754e7a9fe0246e6e0269914abb56ad333d9b2
+STEP 8: ENV OMP_NUM_THREADS=1
+--> Using cache 694da13516d3082e424f936bfc0010e697147ca6cde0b15badba73456a8dbde9
+STEP 9: ENV OPENCV_FOR_THREADS_NUM=1
+--> Using cache 110fbf5527c92348e3954b7108c99feeaa3e70421dd81177be1cd780e2f7ce1f
+STEP 10: COMMIT rhelssd
+110fbf5527c92348e3954b7108c99feeaa3e70421dd81177be1cd780e2f7ce1f

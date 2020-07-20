@@ -1,0 +1,44 @@
+STEP 1: FROM nvcr.io/nvidia/pytorch:19.05-py3
+STEP 2: RUN apt-get update && apt-get install -y --no-install-recommends         infiniband-diags         pciutils &&     rm -rf /var/lib/apt/lists/*
+--> Using cache 8d8e7c01c78e4dfd78f33125fa004517d8f9f479c5ee54e6dcd45ac1ed0173a5
+STEP 3: WORKDIR /workspace/single_stage_detector
+4f9226105397911b249521be1c7a11bccd1baadfeac619c07dd29cd9fb069ef0
+STEP 4: COPY requirements.txt .
+3d0db3b82e4c271a8eddd7c450561c870fc935e16461aaf075c1d21db5fc4128
+STEP 5: RUN pip install --no-cache-dir https://github.com/mlperf/training/archive/6289993e1e9f0f5c4534336df83ff199bd0cdb75.zip#subdirectory=compliance  && pip install --no-cache-dir -r requirements.txt
+Collecting https://github.com/mlperf/training/archive/6289993e1e9f0f5c4534336df83ff199bd0cdb75.zip#subdirectory=compliance
+  Downloading https://github.com/mlperf/training/archive/6289993e1e9f0f5c4534336df83ff199bd0cdb75.zip
+Building wheels for collected packages: mlperf-compliance
+  Building wheel for mlperf-compliance (setup.py): started
+  Building wheel for mlperf-compliance (setup.py): finished with status 'done'
+  Stored in directory: /tmp/pip-ephem-wheel-cache-xlp8x816/wheels/9e/73/0a/3c481ccbda248a195828b8ea5173e83b8394051d8c40e08660
+Successfully built mlperf-compliance
+Installing collected packages: mlperf-compliance
+  Found existing installation: mlperf-compliance 0.0.10
+    Uninstalling mlperf-compliance-0.0.10:
+      Successfully uninstalled mlperf-compliance-0.0.10
+Successfully installed mlperf-compliance-0.6.0
+Requirement already satisfied: mlperf-compliance==0.6.0 in /opt/conda/lib/python3.6/site-packages (from -r requirements.txt (line 1)) (0.6.0)
+Requirement already satisfied: ujson==1.35 in /opt/conda/lib/python3.6/site-packages (from -r requirements.txt (line 2)) (1.35)
+333970c3526babd76e8f4bb59c9283b308b6fffb415c7938f1ef3e321a7f0760
+STEP 6: COPY . .
+79eeaea6d6c52e786978d63d3da612198f911f7dfa1eed6fc9c9cda6abb2ae74
+STEP 7: RUN pip install .
+Processing /workspace/single_stage_detector
+Building wheels for collected packages: SSD
+  Building wheel for SSD (setup.py): started
+  Building wheel for SSD (setup.py): still running...
+  Building wheel for SSD (setup.py): finished with status 'done'
+  Stored in directory: /tmp/pip-ephem-wheel-cache-9bkt2q_c/wheels/3c/23/fa/867476044ab6943074ca29f1de9e5ecd6a5222dfd5c268f590
+Successfully built SSD
+Installing collected packages: SSD
+  Found existing installation: SSD 0.1
+    Uninstalling SSD-0.1:
+      Successfully uninstalled SSD-0.1
+Successfully installed SSD-0.1
+1f0bfeaa2c0ac7b8b9f2f00da8d839df25e4b319431352606a3f1df155087130
+STEP 8: ENV OMP_NUM_THREADS=1
+cf68f653ed110138f115c1e79edb819c95c41bbc16b49b3a422c9418d85fb573
+STEP 9: ENV OPENCV_FOR_THREADS_NUM=1
+STEP 10: COMMIT mlperf_ssd_ngc
+5de8349017fdedffa30561d473132ca40826a441c656e31b1e95188d47ee9e98
